@@ -1,7 +1,10 @@
 "use client";
 import React, { useEffect, useState } from 'react';
-import { ProtectedRoute, TeacherRoute } from "../../components/ProtectedRoute"; 
+import { TeacherRoute } from "../../components/ProtectedRoute"; 
+import { createNotification } from "../../lib/users";
 import { get, edit } from "../../lib/orders"; 
+import { createLog } from "../../lib/logs"; 
+import Cookies from 'js-cookie';
 import Header from "../../components/Header";
 
 export default function OrdersPanel() {
@@ -11,6 +14,8 @@ export default function OrdersPanel() {
     const [showDeclineModal, setShowDeclineModal] = useState(false);
     const [referenceData, setReferenceData] = useState('');
     const [declineReason, setDeclineReason] = useState('');
+
+    const email = Cookies.get("email");
 
     const fetchOrders = async () => {
         try {
@@ -39,6 +44,8 @@ export default function OrdersPanel() {
         try {
             await edit(selectedOrder[0], referenceData, "yes")
             setShowApproveModal(false);
+            await createLog(email, `Принята заявка №${selectedOrder[0]}`)
+            await createNotification(email,  `Заявка №${selectedOrder[0]} принята`)
             setReferenceData('');
             fetchOrders();
         } catch (error) {
@@ -51,6 +58,8 @@ export default function OrdersPanel() {
         try {
             await edit(selectedOrder[0], declineReason, "no")
             setShowDeclineModal(false);
+            await createLog(email, `Отклонена заявка №${selectedOrder[0]}`)
+            await createNotification(email,  `Заявка №${selectedOrder[0]} отклонена`)
             setDeclineReason('');
             fetchOrders();
         } catch (error) {

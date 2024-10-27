@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { getAll, create } from "../../lib/auth"; 
 import Header from "../../components/Header"; 
+import { createLog, createClick } from "../../lib/logs"; 
 
 export default function Reg() {
   const [formData, setFormData] = useState({
@@ -31,7 +32,9 @@ export default function Reg() {
   const handleSubmit = async (e) => {
       e.preventDefault();
       try {
-          const response = await create(formData)
+          const response = await create(formData);
+          await createLog(formData.email, `Создан аккаунт`);
+          await createClick(formData.email, "Зарегистрироваться");
           setMessage(response.data.message);
           
         for (const key in formData) {
@@ -45,21 +48,6 @@ export default function Reg() {
           return null;
       }
   };
-
-//   const deleteUser = async (email, password) => {
-//       try {
-//           await axios.delete('http://127.0.0.1:8000/users/', {
-//               data: { email, password },
-//               headers: {
-//                 'Content-Type': 'application/json'
-//             }
-//           });
-//           fetchUsers();
-//           setMessage('Пользователь успешно удалён');
-//       } catch (error) {
-//           setMessage(error.response?.data.detail || 'Не удалось удалить пользователя');
-//       }
-//   };
 
   useEffect(() => {
       fetchUsers();

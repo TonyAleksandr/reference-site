@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import Header from "../../components/Header"; 
 import { getAll } from "../../lib/auth"; 
 import { useRouter } from "next/navigation";
+import { createLog, createAuth, createClick } from "../../lib/logs"; 
 
 export default function Reg() {
   const [formData, setFormData] = useState({
@@ -40,6 +41,9 @@ export default function Reg() {
       setCookie("email", formData.email);
       setCookie("password", formData.password);
       setMessage("Вы успешно авторизованны!");
+      await createLog(formData.email, `Вход в аккаунт`)
+      await createAuth(formData.email);
+      await createClick(formData.email, "Войти");
       router.push('/');
       
   };

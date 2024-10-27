@@ -3,15 +3,17 @@ import Header from "../../components/Header";
 import React, { useEffect, useState } from 'react';
 import { ProtectedRoute, StudentRoute } from "../../components/ProtectedRoute"; 
 import { get, edit } from "../../lib/orders"; 
+import Cookies from "js-cookie"; 
 
 export default function MyOrders() {
     const [orders, setOrders] = useState([]);
     const [selectedOrder, setSelectedOrder] = useState(null);
     const [showDeclineModal, setShowDeclineModal] = useState(false);
+    const email = Cookies.get("email");
 
     const fetchOrders = async () => {
         try {
-            const response = await get("all")
+            const response = await get(email)
             setOrders(response.data);
         } catch (error) {
             console.error("Error fetching orders:", error);
@@ -84,16 +86,9 @@ export default function MyOrders() {
                             }
                         }}
                     >
-                        <div className="bg-white p-6 rounded-lg shadow-md w-3/4 max-w-2xl"> {/* Увеличиваем ширину */}
+                        <div className="bg-white p-6 rounded-lg shadow-md w-3/4 max-w-2xl"> 
                             <h2 className="text-lg font-bold">Описание заявки №{selectedOrder[0]}</h2>
-{/* 
-                            <div className="mt-4">
-                                <span className="font-medium">Email:</span>
-                                <div className="flex justify-between items-center bg-gray-100 border p-2 rounded-md">
-                                    <p>user@example.com</p>
-                                    <button onClick={() => copyToClipboard('user@example.com')} className="ml-2 px-2 py-1 bg-blue-500 text-white rounded hover:bg-blue-600">Копировать</button>
-                                </div>
-                            </div> */}
+
 
                             <div className="mt-4">
                                 <span className="font-medium">Описание:</span>
@@ -128,7 +123,6 @@ export default function MyOrders() {
                             }
 
                             <div className="mt-4">
-                                {/* Кнопка на всю ширину с центровкой текста */}
                                 <button onClick={() => setShowDeclineModal(false)} className="w-full px-4 py-2 bg-gray-300 rounded hover:bg-gray-400 text-center">Закрыть</button>
                             </div>
                         </div>

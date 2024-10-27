@@ -4,6 +4,8 @@ import Header from "../../components/Header";
 import { ProtectedRoute } from "../../components/ProtectedRoute"; 
 import Cookies from "js-cookie";
 import { create } from "../../lib/orders"; 
+import { createLog, createClick } from "../../lib/logs";
+import { createNotification } from "../../lib/users";
 
 export default function CreateOrder() {
   const [message, setMessage] = useState('');
@@ -23,6 +25,9 @@ export default function CreateOrder() {
         
         setMessage(response.data.message);
         alert('Заявка отправлена!');
+        await createLog(email, `Создана заявка №${response.data.id}`);
+        await createNotification(email, `Вы успешно создали заявку ${response.data.id}`);
+        await createClick(email, "Отправить заявку");
         resetForm();
         
     } catch (error) {
@@ -109,6 +114,7 @@ export default function CreateOrder() {
             <button type="submit" className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-700 items-center justify-center">
               Отправить заявку
             </button>
+            {message && <div className="mt-4 text-gray-700">{message}</div>}
           </form>
         </div>
       </div>

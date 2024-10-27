@@ -87,7 +87,6 @@ def init_database():
                 id INTEGER PRIMARY KEY,
                 email TEXT,
                 message TEXT,
-                seen INTEGER,
                 timestamp INTEGER
             )
         """)
@@ -126,14 +125,15 @@ def get_email_orders(email: str):
     with get_db() as db: 
         cursor = db.execute("SELECT * FROM Orders WHERE email = ?", (email, )) 
         return cursor.fetchall()
-
+    
 def create_order(email: str, fullName: str, institution: str, course: str, phone: str, medicalData: str, status: str, description: str): 
     try: 
         with get_db() as db: 
-            db.execute("INSERT INTO Orders (email, fullName, institution, course, phone, medicalData, status, description) VALUES (?, ?, ?, ?, ?, ?, ?, ?)", 
+            cur = db.execute("INSERT INTO Orders (email, fullName, institution, course, phone, medicalData, status, description) VALUES (?, ?, ?, ?, ?, ?, ?, ?)", 
                 (email, fullName, institution, course, phone, medicalData, status, description)
-            ) 
-            return True 
+            )
+            order_id = cur.lastrowid
+            return order_id
     except Exception as e: 
         print(f"Error creating order: {e}") 
         return False
@@ -160,7 +160,7 @@ def create_student(email: str, timestamp: int):
 
 def remove_student(email: str):
     with get_db() as db:
-        cursor = db.execute("DELETE FROM Students WHERE email = ?", (email))
+        cursor = db.execute("DELETE FROM Students WHERE email = ?", (email, ))
         return cursor.rowcount > 0
     
 def get_students():
@@ -178,7 +178,7 @@ def create_teacher(email: str, timestamp: int):
 
 def remove_teacher(email: str):
     with get_db() as db:
-        cursor = db.execute("DELETE Teachers WHERE email = ?", (email))
+        cursor = db.execute("DELETE FROM Teachers WHERE email = ?", (email,))
         return cursor.rowcount > 0
     
 def get_teachers():
@@ -251,16 +251,16 @@ def get_admins():
         cursor = db.execute("SELECT * FROM Admins")
         return cursor.fetchall()
 
-def create_notification(email: str, message: str, seen: int, timestamp: int):
+def create_notification(email: str, message: str, timestamp: int):
     try:
         with get_db() as db:
-            db.execute("INSERT INTO Notifications (email, message, seen, timestamp) VALUES (?, ?, ?, ?)", 
-                       (email, message, seen, timestamp))
+            db.execute("INSERT INTO Notifications (email, message, timestamp) VALUES (?, ?, ?)", 
+                       (email, message, timestamp))
             return True
     except sqlite3.IntegrityError:
         return False
 
-def get_notifications():
+def get_notifications(email: str):
     with get_db() as db:
-        cursor = db.execute("SELECT * FROM Notifications")
+        cursor = db.execute("SELECT * FROM Notifications WHERE email = ?", (email, ))
         return cursor.fetchall()

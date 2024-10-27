@@ -54,6 +54,12 @@ async def read_users():
     users = get_users()
     return users
 
+@app.get("/user/{id}")
+async def read_user(id: int):
+    users = get_users()
+    user = next((user for user in users if user[0] == id), None)
+    return user
+
 @app.get("/users/{email}/{password}")
 async def read_user(email: str, password: str):
     user = get_user(email, password)
@@ -70,7 +76,7 @@ async def delete_user(email: str, password: str):
 
 @app.get("/orders/{email}")
 async def read_orders(email: str):
-    return get_orders() if email == "all" else get_email_orders()
+    return get_orders() if email == "all" else get_email_orders(email)
 
 @app.post("/order/")
 async def create_new_order(req: Request):
@@ -78,7 +84,7 @@ async def create_new_order(req: Request):
     created = create_order(data["email"], data["fullName"], data["institution"], data["course"], data["phone"], data["medicalData"], data["status"], data["description"])
     if not created:
         raise HTTPException(status_code=400, detail="Ошибка создания заказа")
-    return {"message": "Заказ успешно создан"}
+    return {"message": "Заказ успешно создан", "id": created}
 
 @app.put("/order/")
 async def put_order(req: Request):
@@ -113,6 +119,12 @@ async def read_students():
     students = get_students()
     return students
 
+@app.get("/student/{email}")
+async def read_student(email: str):
+    students = get_students()
+    student = next((student for student in students if student[1] == email), None)
+    return student
+
 @app.get("/admins/")
 async def read_admins():
     admins = get_admins()
@@ -121,7 +133,7 @@ async def read_admins():
 @app.post("/teachers/")
 async def create_teacher_api(req: Request):
     teacher = await req.json()
-    created = remove_teacher(teacher["email"])
+    created = create_teacher(teacher["email"], int(datetime.datetime.now().timestamp()))
     if not created:
         raise HTTPException(status_code=400, detail="Ошибка создания учителя: адрес электронной почты уже существует")
     return JSONResponse(content={"message": "Учитель успешно создан"})
@@ -129,8 +141,8 @@ async def create_teacher_api(req: Request):
 @app.delete("/teachers/")
 async def delete_teacher_api(req: Request):
     teacher = await req.json()
-    created = create_teacher(teacher["email"], int(datetime.datetime.now().timestamp()))
-    if not created:
+    removed = remove_teacher(teacher["email"])
+    if not removed:
         raise HTTPException(status_code=400, detail="Ошибка удаления учителя: адреса электронной почты нет")
     return JSONResponse(content={"message": "Учитель успешно удалён"})
 
@@ -139,30 +151,66 @@ async def read_teachers():
     teachers = get_teachers()
     return teachers
 
-@app.post("/notifications/")
+@app.get("/teacher/{email}")
+async def read_teacher(email: str):
+    teachers = get_teachers()
+    teacher = next((teacher for teacher in teachers if teacher[1] == email), None)
+    return teacher
+
+@app.post("/notification/")
 async def create_notification_api(req: Request):
     notification = await req.json()
-    created = create_notification(notification["email"], notification["message"], notification["seen"], notification["timestamp"])
+    created = create_notification(notification["email"], notification["message"], int(datetime.datetime.now().timestamp()))
     if not created:
         raise HTTPException(status_code=400, detail="Ошибка создания уведомления")
     return JSONResponse(content={"message": "Уведомление успешно создано"})
 
-@app.get("/notifications/")
-async def read_notifications():
-    notifications = get_notifications()
+@app.get("/notifications/{email}")
+async def read_notifications(email: str):
+    notifications = get_notifications(email)
     return notifications
 
 @app.get("/logs/")
-async def get_all_logs(req: Request):
+async def get_all_logs():
     return get_logs()
 
 @app.post("/log/")
-async def get_all_logs(req: Request):
+async def create_log_api(req: Request):
     data = await req.json()
     status = create_log(data["email"], data["message"], int(datetime.datetime.now().timestamp()))
     if not status:
         raise HTTPException(status_code=400, detail="Ошибка создания лога")
     return JSONResponse(content={"message": "Лог успешно создан", "logs": get_logs()})
+
+
+@app.post("/unauth/")
+async def create_unauth_api(req: Request):
+    data = await req.json()
+    status = create_unauth(data["email"],int(datetime.datetime.now().timestamp()))
+    if not status:
+        raise HTTPException(status_code=400, detail="Ошибка создания лога")
+    return JSONResponse(content={"message": "Лог успешно создан"})
+
+
+@app.post("/auth/")
+async def create_auth_api(req: Request):
+    data = await req.json()
+    status = create_auth(data["email"], int(datetime.datetime.now().timestamp()))
+    if not status:
+        raise HTTPException(status_code=400, detail="Ошибка создания лога")
+    return JSONResponse(content={"message": "Лог успешно создан"})
+
+
+@app.post("/click/")
+async def create_click_api(req: Request):
+    data = await req.json()
+    status = create_click(data["email"], data["nameButton"], int(datetime.datetime.now().timestamp()))
+    if not status:
+        raise HTTPException(status_code=400, detail="Ошибка создания лога")
+    return JSONResponse(content={"message": "Лог успешно создан"})
+
+
+
 
 if __name__ == "__main__":
     init_database()
