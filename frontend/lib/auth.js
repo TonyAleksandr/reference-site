@@ -1,7 +1,7 @@
 import axios from "axios";
 import Cookies from "js-cookie";
 
-const API_URL = 'http://127.0.0.1:8000';
+const API_URL = 'http://127.0.0.1:6700';
 export async function setAuth(email, password) {
     Cookies.set('email', email); 
     Cookies.set('password', password); 

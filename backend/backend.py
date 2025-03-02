@@ -4,6 +4,7 @@ from pydantic import BaseModel
 from fastapi.middleware.cors import CORSMiddleware
 from database import *
 import datetime
+import uvicorn
 
 app = FastAPI()
 
@@ -214,5 +215,4 @@ async def create_click_api(req: Request):
 
 if __name__ == "__main__":
     init_database()
-    import uvicorn
-    uvicorn.run(app)
+    uvicorn.run(app, host="0.0.0.0", port=6700)
